@@ -203,6 +203,30 @@ fn show_led_matrix(device: &ra4m1::Peripherals, x:usize, y:usize)
     }
 }
 
+fn draw_heart(device: &ra4m1::Peripherals)
+{
+    let heart: [[u8; 12]; 8] = [
+        [ 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0 ],
+        [ 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0 ],
+        [ 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0 ],
+        [ 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0 ],
+        [ 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0 ],
+        [ 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0 ],
+        [ 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 ],
+        [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+    ];
+
+    for y in 0..8 {
+        for x in 0..12 {
+            if heart[y][x] == 1 {
+                show_led_matrix(&device, x, y);
+            }
+            device.PORT0.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Set both as inputs
+            device.PORT2.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Set both as inputs
+        }
+    }
+}
+
 #[cortex_m_rt::entry]
 fn main() -> ! {
     rtt_init_print!();
@@ -217,23 +241,25 @@ fn main() -> ! {
     loop {
 
         //rprintln!("port0, port 0");
-        show_led_matrix(&device, 0, 0);
+        //show_led_matrix(&device, 0, 0);
 
         //nop_delay(100000);
-        device.PORT0.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Set both as inputs
-        device.PORT2.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Set both as inputs
+        //device.PORT0.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Set both as inputs
+        //device.PORT2.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Set both as inputs
 
         // show_led_matrix(&device, 72, 0);
         //show_led_matrix(&device, 0, 0);
         //show_led_matrix(&device, 0, 1);
 
-        show_led_matrix(&device, 6, 6);
+        //draw_simle(&device);
+        //draw_simle(&device);
+        draw_heart(&device);
         //show_led_matrix(&device, 1, 1);
         //show_led_matrix(&device, 2, 2);
         //rprintln!("Turning off LEDs (both inputs)");
 
         //show_led_matrix(&device, 1, 0);
-        nop_delay(100000);
+        //nop_delay(100000);
         //device.PORT0.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Set both as inputs
         //device.PORT2.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Set both as inputs
     }
