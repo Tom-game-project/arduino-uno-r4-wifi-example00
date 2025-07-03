@@ -16,7 +16,7 @@ pin_mapping = {
 
 
 def r(n:int) -> int:
-    return math.floor((math.sqrt(4*n - 3)  - 1)/2)
+    return math.floor((math.sqrt(4 * n - 3) - 1) / 2)
 
 
 def c(n):
@@ -34,9 +34,9 @@ def row_bot(n:int) -> str:
 
 def gen_tup_str(n:int) -> str:
     if c(n) % 2== 0:
-        return ("(%s, %s)," % (pin_mapping[row_top(n)], pin_mapping[row_bot(n)]))
+        return "(%s, %s)," % (pin_mapping[row_top(n)], pin_mapping[row_bot(n)])
     else:
-        return ("(%s, %s)," % (pin_mapping[row_bot(n)], pin_mapping[row_top(n)],))
+        return "(%s, %s)," % (pin_mapping[row_bot(n)], pin_mapping[row_top(n)],)
 
 
 def main():
