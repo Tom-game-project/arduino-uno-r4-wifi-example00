@@ -61,7 +61,7 @@ const P206_BIT:Ports = Ports::Port2xxPins(1 << 6);
 const P212_BIT:Ports = Ports::Port2xxPins(1 << 12);
 const P213_BIT:Ports = Ports::Port2xxPins(1 << 13);
 
-const PIN_LIST: [(Ports, Ports); 96]= 
+const PIN_LIST: [(Ports, Ports); 96] =
 [
     (P012_BIT, P205_BIT),
     (P205_BIT, P012_BIT),
@@ -215,10 +215,16 @@ fn draw_heart(device: &ra4m1::Peripherals)
         [ 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 ],
         [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
     ];
+    draw_pixel(&device, heart.map(|row| {
+        row.map(|cell| cell != 0)
+    }));
+}
 
+fn draw_pixel(device: &ra4m1::Peripherals, pixel:[[bool; 12]; 8])
+{
     for y in 0..8 {
         for x in 0..12 {
-            if heart[y][x] == 1 {
+            if pixel[y][x] {
                 show_led_matrix(&device, x, y);
             }
             device.PORT0.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Set both as inputs
@@ -239,29 +245,7 @@ fn main() -> ! {
     // Define pin bits for P003 and P004
 
     loop {
-
-        //rprintln!("port0, port 0");
-        //show_led_matrix(&device, 0, 0);
-
-        //nop_delay(100000);
-        //device.PORT0.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Set both as inputs
-        //device.PORT2.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Set both as inputs
-
-        // show_led_matrix(&device, 72, 0);
-        //show_led_matrix(&device, 0, 0);
-        //show_led_matrix(&device, 0, 1);
-
-        //draw_simle(&device);
-        //draw_simle(&device);
         draw_heart(&device);
-        //show_led_matrix(&device, 1, 1);
-        //show_led_matrix(&device, 2, 2);
-        //rprintln!("Turning off LEDs (both inputs)");
-
-        //show_led_matrix(&device, 1, 0);
-        //nop_delay(100000);
-        //device.PORT0.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Set both as inputs
-        //device.PORT2.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Set both as inputs
     }
 }
 
