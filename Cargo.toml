@@ -1,6 +1,6 @@
 [package]
 authors = ["Tom-game-project <tom.ipynb@gmail.com>"]
-name = "rust-rtt-led"
+name = "arduino-uno-r4-wifi-example00"
 edition = "2021"
 version = "0.1.0"
 
@@ -14,10 +14,5 @@ rtt-target = { version = "0.3.1", features = ["cortex-m"], optional = true }
 panic-rtt-target = { version = "0.1.2", features = ["cortex-m"], optional = true }
 ra4m1 = { git = "https://github.com/ra-rs/ra.git" }
 
-[[bin]]
-name = "rust-rtt-led"
-path = "main.rs"
-
 [profile.release]
 debug = 2
-# lto = true

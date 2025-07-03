@@ -161,7 +161,7 @@ const PIN_LIST: [(Ports, Ports); 96] =
     (P013_BIT, P212_BIT),
 ];
 
-fn show_led_matrix(device: &ra4m1::Peripherals, x:usize, y:usize)
+fn turnon_led_matrix(device: &ra4m1::Peripherals, x:usize, y:usize)
 {
     // Configure P003 and P004 for LED matrix control
     // Initially set both as inputs (high-impedance)
@@ -225,10 +225,10 @@ fn draw_pixel(device: &ra4m1::Peripherals, pixel:[[bool; 12]; 8])
     for y in 0..8 {
         for x in 0..12 {
             if pixel[y][x] {
-                show_led_matrix(&device, x, y);
+                turnon_led_matrix(&device, x, y);
             }
             device.PORT0.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Set both as inputs
-            device.PORT2.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Set both as inputs
+            device.PORT2.pdr().write(|w| unsafe { w.pdr().bits(0) });
         }
     }
 }
@@ -241,8 +241,6 @@ fn main() -> ! {
     rprintln!("Hello, World!");
 
     let device = unsafe { pac::Peripherals::steal() };
-
-    // Define pin bits for P003 and P004
 
     loop {
         draw_heart(&device);
