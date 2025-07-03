@@ -39,23 +39,29 @@ pub fn exit() -> ! {
 
 // LED MATRIX CODE
 
+enum Ports
+{
+    Port0xxPins(u16),
+    Port2xxPins(u16),
+}
+
 // Define pin bits for LED matrix control
 // P0xx pins
-const P003_BIT: u16 = 1 << 3;
-const P004_BIT: u16 = 1 << 4;
-const P011_BIT: u16 = 1 << 11;
-const P012_BIT: u16 = 1 << 12;
-const P013_BIT: u16 = 1 << 13;
-const P015_BIT: u16 = 1 << 15;
+const P003_BIT:Ports = Ports::Port0xxPins(1 << 3);
+const P004_BIT:Ports = Ports::Port0xxPins(1 << 4);
+const P011_BIT:Ports = Ports::Port0xxPins(1 << 11);
+const P012_BIT:Ports = Ports::Port0xxPins(1 << 12);
+const P013_BIT:Ports = Ports::Port0xxPins(1 << 13);
+const P015_BIT:Ports = Ports::Port0xxPins(1 << 15);
 
 // P2xx pins
-const P204_BIT: u16 = 1 << 4;
-const P205_BIT: u16 = 1 << 5;
-const P206_BIT: u16 = 1 << 6;
-const P212_BIT: u16 = 1 << 12;
-const P213_BIT: u16 = 1 << 13;
+const P204_BIT:Ports = Ports::Port2xxPins(1 << 4);
+const P205_BIT:Ports = Ports::Port2xxPins(1 << 5);
+const P206_BIT:Ports = Ports::Port2xxPins(1 << 6);
+const P212_BIT:Ports = Ports::Port2xxPins(1 << 12);
+const P213_BIT:Ports = Ports::Port2xxPins(1 << 13);
 
-const ss_list: [(u16, u16); 96]= 
+const PIN_LIST: [(Ports, Ports); 96]= 
 [
     (P205_BIT, P012_BIT),
     (P012_BIT, P205_BIT),
@@ -158,11 +164,37 @@ const ss_list: [(u16, u16); 96]=
 fn show_led_matrix(device: &ra4m1::Peripherals, x:usize, y:usize)
 {
     rprintln!("show_led_matrix {}", x + y * 12);
-    device.PORT0.pdr().write(|w| unsafe {
-        w.pdr().bits(ss_list[x + y * 12].0 | ss_list[x + y * 12].1)
-    }); // Set both as outputs
-    device.PORT0.podr().write(|w| unsafe { w.podr().bits(ss_list[x + y * 12].1) }); 
-    return ;
+    if let (Ports::Port0xxPins(low), Ports::Port0xxPins(high)) = PIN_LIST[x + y * 12] {
+        rprintln!("port0, port 0");
+        device.PORT0.pdr().write(|w| unsafe {
+            w.pdr().bits(low | high)
+        }); // Set both as outputs
+        device.PORT0.podr().write(|w| unsafe { w.podr().bits(high) }); 
+    } else if let (Ports::Port0xxPins(low), Ports::Port2xxPins(high)) = PIN_LIST[x + y * 12] {
+        rprintln!("port0, port 1");
+        device.PORT0.pdr().write(|w| unsafe {
+            w.pdr().bits(low)
+        }); // Set both as outputs
+        device.PORT2.pdr().write(|w| unsafe {
+            w.pdr().bits(high)
+        }); // Set both as outputs
+        device.PORT2.podr().write(|w| unsafe { w.podr().bits(high) });
+    } else if let (Ports::Port2xxPins(low), Ports::Port0xxPins(high)) = PIN_LIST[x + y * 12] {
+        rprintln!("port1, port 0");
+        device.PORT2.pdr().write(|w| unsafe {
+            w.pdr().bits(low)
+        }); // Set both as outputs
+        device.PORT0.pdr().write(|w| unsafe {
+            w.pdr().bits(high)
+        }); // Set both as outputs
+        device.PORT0.podr().write(|w| unsafe { w.podr().bits(high) }); 
+    } else if let (Ports::Port2xxPins(low), Ports::Port2xxPins(high)) = PIN_LIST[x + y * 12] {
+        rprintln!("port1, port 1");
+        device.PORT2.pdr().write(|w| unsafe {
+            w.pdr().bits(low | high)
+        }); // Set both as outputs
+        device.PORT2.podr().write(|w| unsafe { w.podr().bits(high) }); 
+    }
 }
 
 #[cortex_m_rt::entry]
@@ -175,46 +207,46 @@ fn main() -> ! {
     let device = unsafe { pac::Peripherals::steal() };
 
     // Define pin bits for P003 and P004
-    //P003_BIT
-    //let p003_bit = 1 << 3; // Bit 3 for P003
-    //let p004_bit = 1 << 4; // Bit 4 for P004
+
+    let p003_bit = 1 << 3; // Bit 3 for P003
+    let p004_bit = 1 << 4; // Bit 4 for P004
 
     // Configure P003 and P004 for LED matrix control
     // Initially set both as inputs (high-impedance)
     device.PORT0.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Clear all P0 direction bits
     device.PORT0.podr().write(|w| unsafe { w.podr().bits(0) }); // Clear all P0 output bits
+    device.PORT2.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Clear all P0 direction bits
+    device.PORT2.podr().write(|w| unsafe { w.podr().bits(0) }); // Clear all P0 output bits
 
     loop {
-        // Light LED 1 (P003 High, P004 Low)
-        //rprintln!("Lighting LED 1 (P003 High, P004 Low)");
-        //device.PORT0.pdr().write(|w| unsafe { w.pdr().bits(p003_bit | p004_bit) }); // Set both as outputs
-        //device.PORT0.podr().write(|w| unsafe { w.podr().bits(p003_bit) }); // P003 High, P004 Low
-        //
-        //nop_delay(100000);
-        //
-        //// Light LED 2 (P004 High, P003 Low)
-        //rprintln!("Lighting LED 2 (P004 High, P003 Low)");
-        //device.PORT0.pdr().write(|w| unsafe { w.pdr().bits(p003_bit | p004_bit) }); // Set both as outputs
-        //device.PORT0.podr().write(|w| unsafe { w.podr().bits(p004_bit) }); // P004 High, P003 Low
-        //nop_delay(100000);
-        //
-        //// Turn off LEDs (both as inputs)
-        //rprintln!("Turning off LEDs (both inputs)");
-        //device.PORT0.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Set both as inputs
-        //nop_delay(100000);
-        //
 
-        show_led_matrix(&device, 54, 0);
+        //rprintln!("port0, port 0");
+        device.PORT0.pdr().write(|w| unsafe {
+            w.pdr().bits(p003_bit | p004_bit)
+        }); // Set both as outputs
+        device.PORT0.podr().write(|w| unsafe { w.podr().bits(p003_bit) }); 
+
+        device.PORT0.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Set both as inputs
+        device.PORT2.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Set both as inputs
+
+        device.PORT0.pdr().write(|w| unsafe {
+            w.pdr().bits(p003_bit | p004_bit)
+        }); // Set both as outputs
+        device.PORT0.podr().write(|w| unsafe { w.podr().bits(p004_bit) }); 
+        // show_led_matrix(&device, 72, 0);
+        //show_led_matrix(&device, 0, 0);
+        //show_led_matrix(&device, 0, 1);
+
         //show_led_matrix(&device, 6, 6);
         //show_led_matrix(&device, 1, 1);
         //show_led_matrix(&device, 2, 2);
-        nop_delay(100000);
-        rprintln!("Turning off LEDs (both inputs)");
+        //nop_delay(100000);
+        //rprintln!("Turning off LEDs (both inputs)");
         device.PORT0.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Set both as inputs
-        nop_delay(100000);
+        device.PORT2.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Set both as inputs
+        //nop_delay(100000);
     }
 }
-
 
 fn nop_delay(i:u32)
 {
