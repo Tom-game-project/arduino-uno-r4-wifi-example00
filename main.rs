@@ -63,106 +63,112 @@ const P213_BIT:Ports = Ports::Port2xxPins(1 << 13);
 
 const PIN_LIST: [(Ports, Ports); 96]= 
 [
-    (P205_BIT, P012_BIT),
     (P012_BIT, P205_BIT),
-    (P205_BIT, P013_BIT),
+    (P205_BIT, P012_BIT),
     (P013_BIT, P205_BIT),
-    (P012_BIT, P013_BIT),
+    (P205_BIT, P013_BIT),
     (P013_BIT, P012_BIT),
-    (P205_BIT, P003_BIT),
+    (P012_BIT, P013_BIT),
+    (P206_BIT, P205_BIT),
+    (P205_BIT, P206_BIT),
+    (P206_BIT, P012_BIT),
+    (P012_BIT, P206_BIT),
+    (P206_BIT, P013_BIT),
+    (P013_BIT, P206_BIT),
     (P003_BIT, P205_BIT),
-    (P012_BIT, P003_BIT),
+    (P205_BIT, P003_BIT),
     (P003_BIT, P012_BIT),
-    (P013_BIT, P003_BIT),
+    (P012_BIT, P003_BIT),
     (P003_BIT, P013_BIT),
-    (P012_BIT, P004_BIT),
-    (P004_BIT, P012_BIT),
-    (P013_BIT, P004_BIT),
-    (P004_BIT, P013_BIT),
-    (P003_BIT, P004_BIT),
-    (P004_BIT, P003_BIT),
-    (P205_BIT, P011_BIT),
-    (P011_BIT, P205_BIT),
-    (P012_BIT, P011_BIT),
-    (P011_BIT, P012_BIT),
-    (P013_BIT, P011_BIT),
-    (P011_BIT, P013_BIT),
-    (P205_BIT, P004_BIT),
-    (P004_BIT, P205_BIT),
-    (P012_BIT, P011_BIT),
-    (P011_BIT, P012_BIT),
-    (P013_BIT, P011_BIT),
-    (P011_BIT, P013_BIT),
-    (P003_BIT, P011_BIT),
-    (P011_BIT, P003_BIT),
-    (P004_BIT, P011_BIT),
-    (P011_BIT, P004_BIT),
-    (P205_BIT, P015_BIT),
+    (P013_BIT, P003_BIT),
+    (P003_BIT, P206_BIT),
+    (P206_BIT, P003_BIT),
+    (P204_BIT, P205_BIT),
+    (P205_BIT, P204_BIT),
+    (P204_BIT, P012_BIT),
+    (P012_BIT, P204_BIT),
+    (P204_BIT, P013_BIT),
+    (P013_BIT, P204_BIT),
+    (P204_BIT, P206_BIT),
+    (P206_BIT, P204_BIT),
+    (P204_BIT, P003_BIT),
+    (P003_BIT, P204_BIT),
     (P015_BIT, P205_BIT),
+    (P205_BIT, P015_BIT),
+    (P015_BIT, P012_BIT),
+    (P012_BIT, P015_BIT),
+    (P015_BIT, P013_BIT),
+    (P013_BIT, P015_BIT),
+    (P015_BIT, P206_BIT),
+    (P206_BIT, P015_BIT),
+    (P015_BIT, P003_BIT),
+    (P003_BIT, P015_BIT),
+    (P015_BIT, P204_BIT),
+    (P204_BIT, P015_BIT),
     (P004_BIT, P205_BIT),
     (P205_BIT, P004_BIT),
-    (P011_BIT, P012_BIT),
-    (P012_BIT, P011_BIT),
-    (P003_BIT, P015_BIT),
-    (P015_BIT, P003_BIT),
+    (P004_BIT, P012_BIT),
+    (P012_BIT, P004_BIT),
+    (P004_BIT, P013_BIT),
+    (P013_BIT, P004_BIT),
+    (P004_BIT, P206_BIT),
+    (P206_BIT, P004_BIT),
+    (P004_BIT, P003_BIT),
+    (P003_BIT, P004_BIT),
+    (P004_BIT, P204_BIT),
+    (P204_BIT, P004_BIT),
     (P004_BIT, P015_BIT),
     (P015_BIT, P004_BIT),
+    (P011_BIT, P205_BIT),
+    (P205_BIT, P011_BIT),
+    (P011_BIT, P012_BIT),
+    (P012_BIT, P011_BIT),
+    (P011_BIT, P013_BIT),
+    (P013_BIT, P011_BIT),
+    (P011_BIT, P206_BIT),
+    (P206_BIT, P011_BIT),
+    (P011_BIT, P003_BIT),
+    (P003_BIT, P011_BIT),
+    (P011_BIT, P204_BIT),
+    (P204_BIT, P011_BIT),
     (P011_BIT, P015_BIT),
     (P015_BIT, P011_BIT),
-    (P205_BIT, P204_BIT),
-    (P204_BIT, P205_BIT),
-    (P004_BIT, P204_BIT),
-    (P204_BIT, P004_BIT),
-    (P011_BIT, P204_BIT),
-    (P204_BIT, P011_BIT),
-    (P015_BIT, P204_BIT),
-    (P204_BIT, P015_BIT),
-    (P205_BIT, P206_BIT),
-    (P206_BIT, P205_BIT),
-    (P012_BIT, P206_BIT),
-    (P206_BIT, P012_BIT),
-    (P013_BIT, P206_BIT),
-    (P206_BIT, P013_BIT),
-    (P204_BIT, P004_BIT),
-    (P004_BIT, P204_BIT),
-    (P204_BIT, P011_BIT),
-    (P011_BIT, P204_BIT),
-    (P204_BIT, P015_BIT),
-    (P015_BIT, P204_BIT),
-    (P206_BIT, P205_BIT),
-    (P205_BIT, P206_BIT),
-    (P206_BIT, P012_BIT),
-    (P012_BIT, P206_BIT),
-    (P206_BIT, P013_BIT),
-    (P013_BIT, P206_BIT),
-    (P205_BIT, P212_BIT),
-    (P212_BIT, P205_BIT),
-    (P012_BIT, P212_BIT),
-    (P212_BIT, P012_BIT),
-    (P013_BIT, P212_BIT),
-    (P212_BIT, P013_BIT),
-    (P003_BIT, P212_BIT),
-    (P212_BIT, P003_BIT),
-    (P004_BIT, P212_BIT),
-    (P212_BIT, P004_BIT),
-    (P011_BIT, P212_BIT),
-    (P212_BIT, P011_BIT),
-    (P205_BIT, P213_BIT),
+    (P011_BIT, P004_BIT),
+    (P004_BIT, P011_BIT),
     (P213_BIT, P205_BIT),
-    (P012_BIT, P213_BIT),
+    (P205_BIT, P213_BIT),
     (P213_BIT, P012_BIT),
-    (P013_BIT, P213_BIT),
+    (P012_BIT, P213_BIT),
     (P213_BIT, P013_BIT),
-    (P003_BIT, P213_BIT),
+    (P013_BIT, P213_BIT),
+    (P213_BIT, P206_BIT),
+    (P206_BIT, P213_BIT),
     (P213_BIT, P003_BIT),
-    (P004_BIT, P213_BIT),
+    (P003_BIT, P213_BIT),
+    (P213_BIT, P204_BIT),
+    (P204_BIT, P213_BIT),
+    (P213_BIT, P015_BIT),
+    (P015_BIT, P213_BIT),
     (P213_BIT, P004_BIT),
-    (P011_BIT, P213_BIT),
+    (P004_BIT, P213_BIT),
     (P213_BIT, P011_BIT),
+    (P011_BIT, P213_BIT),
+    (P212_BIT, P205_BIT),
+    (P205_BIT, P212_BIT),
+    (P212_BIT, P012_BIT),
+    (P012_BIT, P212_BIT),
+    (P212_BIT, P013_BIT),
+    (P013_BIT, P212_BIT),
 ];
 
 fn show_led_matrix(device: &ra4m1::Peripherals, x:usize, y:usize)
 {
+    // Configure P003 and P004 for LED matrix control
+    // Initially set both as inputs (high-impedance)
+    device.PORT0.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Clear all P0 direction bits
+    device.PORT0.podr().write(|w| unsafe { w.podr().bits(0) }); // Clear all P0 output bits
+    device.PORT2.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Clear all P0 direction bits
+    device.PORT2.podr().write(|w| unsafe { w.podr().bits(0) }); // Clear all P0 output bits
     rprintln!("show_led_matrix {}", x + y * 12);
     if let (Ports::Port0xxPins(low), Ports::Port0xxPins(high)) = PIN_LIST[x + y * 12] {
         rprintln!("port0, port 0");
@@ -208,43 +214,28 @@ fn main() -> ! {
 
     // Define pin bits for P003 and P004
 
-    let p003_bit = 1 << 3; // Bit 3 for P003
-    let p004_bit = 1 << 4; // Bit 4 for P004
-
-    // Configure P003 and P004 for LED matrix control
-    // Initially set both as inputs (high-impedance)
-    device.PORT0.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Clear all P0 direction bits
-    device.PORT0.podr().write(|w| unsafe { w.podr().bits(0) }); // Clear all P0 output bits
-    device.PORT2.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Clear all P0 direction bits
-    device.PORT2.podr().write(|w| unsafe { w.podr().bits(0) }); // Clear all P0 output bits
-
     loop {
 
         //rprintln!("port0, port 0");
-        device.PORT0.pdr().write(|w| unsafe {
-            w.pdr().bits(p003_bit | p004_bit)
-        }); // Set both as outputs
-        device.PORT0.podr().write(|w| unsafe { w.podr().bits(p003_bit) }); 
+        show_led_matrix(&device, 0, 0);
 
+        //nop_delay(100000);
         device.PORT0.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Set both as inputs
         device.PORT2.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Set both as inputs
 
-        device.PORT0.pdr().write(|w| unsafe {
-            w.pdr().bits(p003_bit | p004_bit)
-        }); // Set both as outputs
-        device.PORT0.podr().write(|w| unsafe { w.podr().bits(p004_bit) }); 
         // show_led_matrix(&device, 72, 0);
         //show_led_matrix(&device, 0, 0);
         //show_led_matrix(&device, 0, 1);
 
-        //show_led_matrix(&device, 6, 6);
+        show_led_matrix(&device, 6, 6);
         //show_led_matrix(&device, 1, 1);
         //show_led_matrix(&device, 2, 2);
-        //nop_delay(100000);
         //rprintln!("Turning off LEDs (both inputs)");
-        device.PORT0.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Set both as inputs
-        device.PORT2.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Set both as inputs
-        //nop_delay(100000);
+
+        //show_led_matrix(&device, 1, 0);
+        nop_delay(100000);
+        //device.PORT0.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Set both as inputs
+        //device.PORT2.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Set both as inputs
     }
 }
 
