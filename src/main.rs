@@ -1,6 +1,8 @@
 // ```
 // cargo run --release
+// # With rtt output, it slows down and the LED flickers, so it is for testing purposes.
 // cargo run --release --features=rtt
+// # Temporarily allow writing to the connected microcomputer device.
 // sudo chmod a+rw /dev/hidraw2
 // ```
 #![no_main]
@@ -163,8 +165,6 @@ const PIN_LIST: [(Ports, Ports); 96] =
 
 fn turnon_led_matrix(device: &ra4m1::Peripherals, x:usize, y:usize)
 {
-    // Configure P003 and P004 for LED matrix control
-    // Initially set both as inputs (high-impedance)
     device.PORT0.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Clear all P0 direction bits
     device.PORT0.podr().write(|w| unsafe { w.podr().bits(0) }); // Clear all P0 output bits
     device.PORT2.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Clear all P0 direction bits
