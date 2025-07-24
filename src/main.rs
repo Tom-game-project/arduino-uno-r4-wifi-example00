@@ -3,7 +3,7 @@
 // # With rtt output, it slows down and the LED flickers, so it is for testing purposes.
 // cargo run --release --features=rtt
 // # Temporarily allow writing to the connected microcomputer device.
-// sudo chmod a+rw /dev/hidraw2
+// sudo chmod a+rw /dev/hidraw*
 // ```
 #![no_main]
 #![no_std]
@@ -166,9 +166,9 @@ const PIN_LIST: [(Ports, Ports); 96] =
 fn turnon_led_matrix(device: &ra4m1::Peripherals, x:usize, y:usize)
 {
     device.PORT0.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Clear all P0 direction bits
+    device.PORT2.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Clear all P2 direction bits
     device.PORT0.podr().write(|w| unsafe { w.podr().bits(0) }); // Clear all P0 output bits
-    device.PORT2.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Clear all P0 direction bits
-    device.PORT2.podr().write(|w| unsafe { w.podr().bits(0) }); // Clear all P0 output bits
+    device.PORT2.podr().write(|w| unsafe { w.podr().bits(0) }); // Clear all P2 output bits
     rprintln!("show_led_matrix {}", x + y * 12);
     if let (Ports::Port0xxPins(low), Ports::Port0xxPins(high)) = PIN_LIST[x + y * 12] {
         rprintln!("port0, port 0");
@@ -201,6 +201,8 @@ fn turnon_led_matrix(device: &ra4m1::Peripherals, x:usize, y:usize)
         }); // Set both as outputs
         device.PORT2.podr().write(|w| unsafe { w.podr().bits(high) }); 
     }
+
+
 }
 
 fn draw_heart(device: &ra4m1::Peripherals)
@@ -227,9 +229,9 @@ fn draw_pixel(device: &ra4m1::Peripherals, pixel:[[bool; 12]; 8])
             if pixel[y][x] {
                 turnon_led_matrix(&device, x, y);
             }
-            device.PORT0.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Set both as inputs
-            device.PORT2.pdr().write(|w| unsafe { w.pdr().bits(0) });
         }
+        device.PORT0.pdr().write(|w| unsafe { w.pdr().bits(0) }); // Set both as inputs
+        device.PORT2.pdr().write(|w| unsafe { w.pdr().bits(0) });
     }
 }
 
