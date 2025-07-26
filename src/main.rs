@@ -209,14 +209,14 @@ fn turnon_led_matrix(device: &ra4m1::Peripherals, x:usize, y:usize)
 fn draw_heart(device: &ra4m1::Peripherals)
 {
     let heart: [[u8; 12]; 8] = [
-        [ 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0 ],
-        [ 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0 ],
-        [ 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0 ],
-        [ 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0 ],
-        [ 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0 ],
-        [ 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0 ],
-        [ 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 ],
-        [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+        [0,0,1,1,0,0,0,1,1,0,0,0],
+        [0,1,1,1,1,0,1,1,1,1,0,0],
+        [0,1,1,1,1,1,1,1,1,1,0,0],
+        [0,0,1,1,1,1,1,1,1,0,0,0],
+        [0,0,0,1,1,1,1,1,0,0,0,0],
+        [0,0,0,0,1,1,1,0,0,0,0,0],
+        [0,0,0,0,0,1,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0]
     ];
     draw_pixel(&device, heart.map(|row| {
         row.map(|cell| cell != 0)
@@ -259,6 +259,24 @@ fn draw_left_arrow(device: &ra4m1::Peripherals)
         row.map(|cell| cell != 0)
     }));
 }
+
+fn draw_right_left_arrow(device: &ra4m1::Peripherals)
+{
+    let heart: [[u8; 12]; 8] = [
+        [0,0,0,1,0,0,0,0,1,0,0,0],
+        [0,0,1,1,0,0,0,0,1,1,0,0],
+        [0,1,1,1,0,0,0,0,1,1,1,0],
+        [1,1,1,1,1,1,1,1,1,1,1,1],
+        [1,1,1,1,1,1,1,1,1,1,1,1],
+        [0,1,1,1,0,0,0,0,1,1,1,0],
+        [0,0,1,1,0,0,0,0,1,1,0,0],
+        [0,0,0,1,0,0,0,0,1,0,0,0]
+    ];
+    draw_pixel(&device, heart.map(|row| {
+        row.map(|cell| cell != 0)
+    }));
+}
+
 
 fn draw_pixel(device: &ra4m1::Peripherals, pixel:[[bool; 12]; 8])
 {
@@ -309,11 +327,16 @@ fn main() -> ! {
 
     pmisc.pwpr.write(|w|w.b0wi().clear_bit());
     pmisc.pwpr.write(|w|w.pfswe().set_bit()); // PFSレジスタの保護を解除
-     pfs.p112pfs().modify(|_r, w| {
+    pfs.p112pfs().modify(|_r, w| {
         w.pcr().set_bit() // PCR (Pull-up Control) ビットを1に設定
     });
-    pmisc.pwpr.write(|w|w.pfswe().set_bit()); // PFSレジスタの保護を解除
-     pfs.p111pfs().modify(|_r, w| {
+    pfs.p111pfs().modify(|_r, w| {
+        w.pcr().set_bit() // PCR (Pull-up Control) ビットを1に設定
+    });
+    pfs.p107pfs_ha().modify(|_r, w| {
+        w.pcr().set_bit() // PCR (Pull-up Control) ビットを1に設定
+    });
+    pfs.p106pfs_ha().modify(|_r, w| {
         w.pcr().set_bit() // PCR (Pull-up Control) ビットを1に設定
     });
     pmisc.pwpr.write(|w|w.pfswe().clear_bit()); // PFSレジスタ保護
@@ -322,13 +345,18 @@ fn main() -> ! {
     loop {
         let is_pressed12 = (port1.pidr().read().bits() & button_pin_mask12) == 0;
         let is_pressed11 = (port1.pidr().read().bits() & button_pin_mask11) == 0;
+        let is_pressed07 = (port1.pidr().read().bits() & button_pin_mask07) == 0;
+        let is_pressed06 = (port1.pidr().read().bits() & button_pin_mask06) == 0;
 
         // ボタンが押されていればLEDを点灯、押されていなければ消灯
-        if is_pressed12 {
+        if is_pressed11 && is_pressed12 {
+            draw_right_left_arrow(&device);
+        }
+        else if is_pressed12 || is_pressed07{
             draw_left_arrow(&device);
             rprintln!("flag 0");
         } 
-        else if is_pressed11 
+        else if is_pressed11 || is_pressed06
         {
             draw_right_arrow(&device);
             rprintln!("flag 1");
