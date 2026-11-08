@@ -19,59 +19,120 @@ macro_rules! rprintln {
 /// 各点灯ピクセルが均一に光り続けるホールドサイクル数
 const PIXEL_HOLD_CYCLES: u32 = 32;
 
-#[derive(Copy, Clone)]
-enum Ports {
-    Port0xxPins(u16),
-    Port2xxPins(u16),
+/// 12×8 = 96ピクセルを96bit (12バイト) に隙間なく詰めたビットマップ型
+/// bit (x + y * 12) が座標 (x, y) のON/OFFに対応する
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
+#[repr(transparent)]
+pub struct MatrixBitmap(pub [u32; 3]);
+
+impl MatrixBitmap {
+    pub const EMPTY: Self = Self([0; 3]);
+
+    /// 2進数リテラル8行（各行下位12bit、左端がx=0）からコンパイル時にビットマップを生成する
+    #[inline(always)]
+    pub const fn from_rows(rows: [u16; 8]) -> Self {
+        let mut words = [0u32; 3];
+        let mut y = 0;
+        while y < 8 {
+            let row = rows[y];
+            let mut x = 0;
+            while x < 12 {
+                // 2進数表記の左端(bit 11)を x=0、右端(bit 0)を x=11 に対応させる
+                if ((row >> (11 - x)) & 1) != 0 {
+                    let idx = x + y * 12;
+                    words[idx >> 5] |= 1u32 << (idx & 31);
+                }
+                x += 1;
+            }
+            y += 1;
+        }
+        Self(words)
+    }
+
+    /// 既存の [[bool; 12]; 8] 配列からビットマップへ変換する（const文脈でも実行時でも利用可能）
+    #[inline(always)]
+    pub const fn from_bools(pixel: &[[bool; 12]; 8]) -> Self {
+        let mut words = [0u32; 3];
+        let mut y = 0;
+        while y < 8 {
+            let mut x = 0;
+            while x < 12 {
+                if pixel[y][x] {
+                    let idx = x + y * 12;
+                    words[idx >> 5] |= 1u32 << (idx & 31);
+                }
+                x += 1;
+            }
+            y += 1;
+        }
+        Self(words)
+    }
+
+    /// 実行時に特定の座標 (x, y) のピクセルを書き換える
+    #[inline(always)]
+    pub fn set(&mut self, x: usize, y: usize, on: bool) {
+        if x < 12 && y < 8 {
+            let idx = x + y * 12;
+            let mask = 1u32 << (idx & 31);
+            if on {
+                self.0[idx >> 5] |= mask;
+            } else {
+                self.0[idx >> 5] &= !mask;
+            }
+        }
+    }
 }
 
-// #[derive(Copy, Clone)]
-// struct NewPorts(u32);
-// 
-// impl NewPorts {
-//     pub const fn port0(bit: u8) -> Self { Self(1u32 << bit) }
-//     pub const fn port2(bit: u8) -> Self { Self(1u32 << (bit + 16)) }
-// 
-//     #[inline(always)]
-//     pub const fn split(self) -> (u16, u16) {
-//         (self.0 as u16, (self.0 >> 16) as u16)
-//     }
-// }
+/// 下位16bit = Port0のピンマスク, 上位16bit = Port2のピンマスク
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[repr(transparent)]
+pub struct PinMask(u32);
 
-impl Ports {
-    /// (Port0のビットマスク, Port2のビットマスク) に分解する（全域性保証）
+impl PinMask {
     #[inline(always)]
-    pub const fn into_port_masks(self) -> (u16, u16) {
-        match self {
-            Ports::Port0xxPins(bits) => (bits, 0),
-            Ports::Port2xxPins(bits) => (0, bits),
-        }
+    pub const fn port0(bit: u8) -> Self {
+        Self(1u32 << bit)
+    }
+
+    #[inline(always)]
+    pub const fn port2(bit: u8) -> Self {
+        Self(1u32 << (bit + 16))
+    }
+
+    /// (low, high) のペアから、Port0とPort2それぞれの PCNTR1 レジスタ値
+    /// (上位16bit = PODR, 下位16bit = PDR) を分岐なしで直接合成する
+    #[inline(always)]
+    pub const fn pcntr1_values(low: Self, high: Self) -> (u32, u32) {
+        let pdr_both = low.0 | high.0;
+        let p0_pcntr1 = (high.0 << 16) | (pdr_both & 0x0000_FFFF);
+        let p2_pcntr1 = (high.0 & 0xFFFF_0000) | (pdr_both >> 16);
+        (p0_pcntr1, p2_pcntr1)
     }
 }
 
 // Define pin bits for LED matrix control
 // P0xx pins
-const P003_BIT: Ports = Ports::Port0xxPins(1 << 3);
-const P004_BIT: Ports = Ports::Port0xxPins(1 << 4);
-const P011_BIT: Ports = Ports::Port0xxPins(1 << 11);
-const P012_BIT: Ports = Ports::Port0xxPins(1 << 12);
-const P013_BIT: Ports = Ports::Port0xxPins(1 << 13);
-const P015_BIT: Ports = Ports::Port0xxPins(1 << 15);
+const P003_BIT: PinMask = PinMask::port0(3);
+const P004_BIT: PinMask = PinMask::port0(4);
+const P011_BIT: PinMask = PinMask::port0(11);
+const P012_BIT: PinMask = PinMask::port0(12);
+const P013_BIT: PinMask = PinMask::port0(13);
+const P015_BIT: PinMask = PinMask::port0(15);
 
 // P2xx pins
-const P204_BIT: Ports = Ports::Port2xxPins(1 << 4);
-const P205_BIT: Ports = Ports::Port2xxPins(1 << 5);
-const P206_BIT: Ports = Ports::Port2xxPins(1 << 6);
-const P212_BIT: Ports = Ports::Port2xxPins(1 << 12);
-const P213_BIT: Ports = Ports::Port2xxPins(1 << 13);
+const P204_BIT: PinMask = PinMask::port2(4);
+const P205_BIT: PinMask = PinMask::port2(5);
+const P206_BIT: PinMask = PinMask::port2(6);
+const P212_BIT: PinMask = PinMask::port2(12);
+const P213_BIT: PinMask = PinMask::port2(13);
 
-const PINS: [Ports; 11] = [
+const PINS: [PinMask; 11] = [
     P205_BIT, P012_BIT, P013_BIT, P206_BIT, P003_BIT, P204_BIT,
     P015_BIT, P004_BIT, P011_BIT, P213_BIT, P212_BIT,
 ];
 
 #[inline(always)]
-fn get_pins_math(idx: usize) -> (Ports, Ports) {
+fn get_pins_math(idx: usize) -> (PinMask, PinMask) {
     let k = idx >> 1;
     // ビット 0, 1, 3, 6, 10, 15, 21, 28, 36, 45 が1の定数
     const TRI_MASK: u64 = 0x2010_1020_844B;
@@ -86,13 +147,6 @@ fn get_pins_math(idx: usize) -> (Ports, Ports) {
 
 // ============================================================================
 // チャーリープレクシングLEDマトリクスの幽霊型（Typestate）ステートマシン
-// 要求されるハードウェア操作順序:
-// [Unreset]
-//   --(1. clear_directions: PORT0.PDR=0, PORT2.PDR=0 で全ピンを入力Hi-Z化)--> [DirectionsCleared]
-//   --(2. clear_outputs:    PORT0.PODR=0, PORT2.PODR=0 で出力ラッチを0初期化)--> [ReadyToDrive]
-//   --(3. drive_pair:       対象ピンのPDR出力化・PODRのHigh出力設定)--> [Active]
-//   --(4. hold_uniform:     全点灯ピクセル共通の一定時間だけ点灯を維持)--> [HoldCompleted]
-//   --(5. turn_off:         次の列の走査へ移る前にPDR=0で確実に消灯)--> [DirectionsCleared]
 // ============================================================================
 
 pub struct Unreset;
@@ -118,7 +172,6 @@ impl<'a> MatrixPortGuard<'a, Unreset> {
         }
     }
 
-    /// 手順1: まずPORT0 / PORT2の全方向ビット(PDR)を0（入力・Hi-Z）にクリアする
     #[inline(always)]
     pub fn clear_directions(self) -> MatrixPortGuard<'a, DirectionsCleared> {
         self.port0.pdr().write(|w| unsafe { w.pdr().bits(0) });
@@ -132,7 +185,6 @@ impl<'a> MatrixPortGuard<'a, Unreset> {
 }
 
 impl<'a> MatrixPortGuard<'a, DirectionsCleared> {
-    /// 手順2: 方向ビット(PDR)が0にクリアされた状態でのみ、出力データレジスタ(PODR)を0にクリアする
     #[inline(always)]
     pub fn clear_outputs(self) -> MatrixPortGuard<'a, ReadyToDrive> {
         self.port0.podr().write(|w| unsafe { w.podr().bits(0) });
@@ -146,16 +198,10 @@ impl<'a> MatrixPortGuard<'a, DirectionsCleared> {
 }
 
 impl<'a> MatrixPortGuard<'a, ReadyToDrive> {
-    /// 手順3: PDR=0 かつ PODR=0 が保証された `ReadyToDrive` 状態でのみ、指定ペアのPDR出力設定とPODR High設定を実行可能
     #[inline(always)]
-    pub fn drive_pair(self, pair: (Ports, Ports)) -> MatrixPortGuard<'a, Active> {
+    pub fn drive_pair(self, pair: (PinMask, PinMask)) -> MatrixPortGuard<'a, Active> {
         let (low_pin, high_pin) = pair;
-        let (p0_low, p2_low) = low_pin.into_port_masks();
-        let (p0_high, p2_high) = high_pin.into_port_masks();
-
-        // 上位16bitがPODR(出力値)、下位16bitがPDR(方向: 1=出力)
-        let p0_pcntr1 = ((p0_high as u32) << 16) | ((p0_low | p0_high) as u32);
-        let p2_pcntr1 = ((p2_high as u32) << 16) | ((p2_low | p2_high) as u32);
+        let (p0_pcntr1, p2_pcntr1) = PinMask::pcntr1_values(low_pin, high_pin);
 
         self.port0.pcntr1().write(|w| unsafe { w.bits(p0_pcntr1) });
         self.port2.pcntr1().write(|w| unsafe { w.bits(p2_pcntr1) });
@@ -169,7 +215,6 @@ impl<'a> MatrixPortGuard<'a, ReadyToDrive> {
 }
 
 impl<'a> MatrixPortGuard<'a, Active> {
-    /// 手順4: 点灯状態(Active)を一定サイクル保持し、列の位置による点灯時間の偏りをなくす
     #[inline(always)]
     pub fn hold_uniform(self) -> MatrixPortGuard<'a, HoldCompleted> {
         for _ in 0..PIXEL_HOLD_CYCLES {
@@ -184,7 +229,6 @@ impl<'a> MatrixPortGuard<'a, Active> {
 }
 
 impl<'a> MatrixPortGuard<'a, HoldCompleted> {
-    /// 手順5: 一定時間保持した直後に必ずPDR=0で消灯し、右側の消灯マス(false)走査中に光りっぱなしになるのを防ぐ
     #[inline(always)]
     pub fn turn_off(self) -> MatrixPortGuard<'a, DirectionsCleared> {
         self.port0.pdr().write(|w| unsafe { w.pdr().bits(0) });
@@ -197,17 +241,13 @@ impl<'a> MatrixPortGuard<'a, HoldCompleted> {
     }
 }
 
-/// 1ピクセルの点灯〜一定時間保持〜消灯(DirectionsCleared)までを1セットとして型で強制する
+/// 1ピクセル（1次元インデックス 0..96）の点灯〜一定時間保持〜消灯までを型で強制する
 #[inline(always)]
-fn turnon_led_matrix<'a>(
+fn turnon_led_index<'a>(
     guard: MatrixPortGuard<'a, DirectionsCleared>,
-    x: usize,
-    y: usize,
+    index: usize,
 ) -> MatrixPortGuard<'a, DirectionsCleared> {
-    let index = x + y * 12;
     rprintln!("show_led_matrix {}", index);
-    // [DirectionsCleared] -> (clear_outputs) -> [ReadyToDrive] -> (drive_pair)
-    // -> [Active] -> (hold_uniform) -> [HoldCompleted] -> (turn_off) -> [DirectionsCleared]
     guard
         .clear_outputs()
         .drive_pair(get_pins_math(index))
@@ -215,16 +255,29 @@ fn turnon_led_matrix<'a>(
         .turn_off()
 }
 
-pub fn draw_pixel(device: &ra4m1::Peripherals, pixel: [[bool; 12]; 8]) {
-    // 最初に1回 `DirectionsCleared` (PDR=0) 状態を作り、そのガードを全ピクセル走査で引き回す
+/// ビットマップを受け取り、立っているビット（点灯ピクセル）だけを直接ジャンプ走査して描画する
+pub fn draw_bitmap(device: &ra4m1::Peripherals, bitmap: &MatrixBitmap) {
     let mut guard: MatrixPortGuard<'_, DirectionsCleared> =
         MatrixPortGuard::new(device).clear_directions();
 
-    for y in 0..8 {
-        for x in 0..12 {
-            if pixel[y][x] {
-                guard = turnon_led_matrix(guard, x, y);
-            }
+    for (word_idx, & initial_word) in bitmap.0.iter().enumerate() {
+        let base_index = word_idx << 5; // word_idx * 32
+        let mut word = initial_word;
+
+        // 光っているビットが存在する間だけループ（消灯ピクセルは0サイクルでスキップ）
+        while word != 0 {
+            let bit_pos = word.trailing_zeros() as usize;
+            guard = turnon_led_index(guard, base_index + bit_pos);
+
+            // 最下位の「1」のビットだけをクリアして次の点灯ビットへ進む
+            word &= word - 1;
         }
     }
 }
+
+/// 互換用: 既存の &[[bool; 12]; 8] からもそのまま描画可能
+pub fn draw_pixel(device: &ra4m1::Peripherals, pixel: &[[bool; 12]; 8]) {
+    let bitmap = MatrixBitmap::from_bools(pixel);
+    draw_bitmap(device, &bitmap);
+}
+

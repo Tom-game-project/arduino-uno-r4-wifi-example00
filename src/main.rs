@@ -244,7 +244,7 @@ fn draw_heart(device: &ra4m1::Peripherals) {
         [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     ];
-    led_matrix::draw_pixel(device, heart.map(|row| row.map(|cell| cell != 0)));
+    led_matrix::draw_pixel(device, &heart.map(|row| row.map(|cell| cell != 0)));
 }
 
 fn draw_right_arrow(device: &ra4m1::Peripherals) {
@@ -258,7 +258,7 @@ fn draw_right_arrow(device: &ra4m1::Peripherals) {
         [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
     ];
-    led_matrix::draw_pixel(device, heart.map(|row| row.map(|cell| cell != 0)));
+    led_matrix::draw_pixel(device, &heart.map(|row| row.map(|cell| cell != 0)));
 }
 
 fn draw_left_arrow(device: &ra4m1::Peripherals) {
@@ -272,7 +272,7 @@ fn draw_left_arrow(device: &ra4m1::Peripherals) {
         [0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
     ];
-    led_matrix::draw_pixel(device, heart.map(|row| row.map(|cell| cell != 0)));
+    led_matrix::draw_pixel(device, &heart.map(|row| row.map(|cell| cell != 0)));
 }
 
 fn draw_right_left_arrow(device: &ra4m1::Peripherals) {
@@ -286,7 +286,7 @@ fn draw_right_left_arrow(device: &ra4m1::Peripherals) {
         [0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
         [0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0],
     ];
-    led_matrix::draw_pixel(device, heart.map(|row| row.map(|cell| cell != 0)));
+    led_matrix::draw_pixel(device, &heart.map(|row| row.map(|cell| cell != 0)));
 }
 
 #[cortex_m_rt::entry]
