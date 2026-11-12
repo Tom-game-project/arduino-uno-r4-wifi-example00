@@ -2,4 +2,4 @@
 
 mod hardware;
 pub mod led_matrix;
-pub use hardware::{configure, ButtonStates, Port1Buttons, PullUpReady};
+pub use hardware::configure;

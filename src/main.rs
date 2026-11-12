@@ -36,9 +36,6 @@ macro_rules! rprintln {
 }
 // ===== rtt debug tools =====
 
-#[allow(unused)]
-use cortex_m::asm::nop;
-
 #[cfg(not(feature = "rtt"))]
 #[inline(never)]
 #[panic_handler]
@@ -82,48 +79,6 @@ fn draw_heart(matrix: &mut led_matrix::LedMatrix) {
     matrix.draw_pixel(&heart.map(|row| row.map(|cell| cell != 0)));
 }
 
-fn draw_right_arrow(matrix: &mut led_matrix::LedMatrix) {
-    let heart: [[u8; 12]; 8] = [
-        [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0],
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-    ];
-    matrix.draw_pixel(&heart.map(|row| row.map(|cell| cell != 0)));
-}
-
-fn draw_left_arrow(matrix: &mut led_matrix::LedMatrix) {
-    let heart: [[u8; 12]; 8] = [
-        [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-        [0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-    ];
-    matrix.draw_pixel(&heart.map(|row| row.map(|cell| cell != 0)));
-}
-
-fn draw_right_left_arrow(matrix: &mut led_matrix::LedMatrix) {
-    let heart: [[u8; 12]; 8] = [
-        [0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0],
-        [0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
-        [0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0],
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-        [0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0],
-        [0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
-        [0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0],
-    ];
-    matrix.draw_pixel(&heart.map(|row| row.map(|cell| cell != 0)));
-}
-
 #[cortex_m_rt::entry]
 fn main() -> ! {
     rtt_init_print!();
@@ -135,29 +90,9 @@ fn main() -> ! {
         exit();
     };
 
-    let (buttons, mut matrix) = configure(device);
+    let mut matrix = configure(device);
 
     loop {
-        // `PullUpReady` 状態の `buttons` からのみ安全に状態を読み取れる
-        let state = buttons.read();
-
-        if state.is_pressed11 && state.is_pressed12 {
-            draw_right_left_arrow(&mut matrix);
-        } else if state.is_pressed12 || state.is_pressed07 {
-            draw_left_arrow(&mut matrix);
-            rprintln!("flag 0");
-        } else if state.is_pressed11 || state.is_pressed06 {
-            draw_right_arrow(&mut matrix);
-            rprintln!("flag 1");
-        } else {
-            draw_heart(&mut matrix);
-        }
-    }
-}
-
-#[allow(dead_code)]
-fn nop_delay(i: u32) {
-    for _ in 0..i {
-        nop();
+        draw_heart(&mut matrix);
     }
 }
